@@ -1,0 +1,6 @@
+__pycache__/
+*.py[cod]
+build/
+_site/
+*.zip
+化学实验数据处理系统_网页版_v2.0/
