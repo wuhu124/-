@@ -15,6 +15,8 @@ python package.py
 
 生成结果位于 `build/`。用本地静态服务器打开 `build/index.html`，或解压
 生成的网页压缩包查看。`build/` 和压缩包为生成产物，不提交到源码仓库。
+`package.py` 还会生成 `实验计算_源码与可部署网页.zip`，其中包含源码和
+可直接上传的完整网站，适合交给他人部署。
 
 ## GitHub Pages
 

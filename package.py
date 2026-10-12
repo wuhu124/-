@@ -16,6 +16,7 @@ BUILD = os.path.join(HERE, "build")
 A_DIR = "版本A-清透玻璃版"
 B_DIR = "版本B-模拟器版"
 PKG = "化学实验数据处理系统_网页版_v2.0"
+SOURCE_PKG = "实验计算_源码与可部署网页"
 
 
 def log(text):
@@ -122,6 +123,33 @@ README = """化学实验数据处理系统（网页版）
   （需要电脑上已装 Python 3；不需要安装任何第三方包）
 
 ================================================
+"""
+
+SOURCE_README = """实验计算：源码与可部署网页
+====================================
+
+【最简单：直接部署网页】
+  1. 打开「可直接上传的网站」文件夹。
+  2. 把该文件夹里的 index.html、版本A-清透玻璃版、
+     版本B-模拟器版，一起上传到支持 HTTPS 的静态网站空间。
+  3. 发布后打开 index.html 对应的 HTTPS 链接测试，再把链接发给学生。
+  不要只上传 index.html；它需要同目录下的两个版本文件夹。
+
+【GitHub Pages 自动部署】
+  「源码」文件夹内包含生成脚本和 .github/workflows/deploy-pages.yml。
+  将「源码」文件夹内的所有内容放进一个公开 GitHub 仓库，仓库的
+  Settings → Pages → Build and deployment → Source 选择 GitHub Actions，
+  向 main 分支推送后会自动构建并部署。Actions 成功后，从 Pages 设置
+  获取 HTTPS 链接。
+
+【源码内容】
+  build.py / build_v2.py：生成两套实验网页。
+  package.py：生成网页包与本交接包。
+  stage_pages.py：为 Pages 准备文件并检查站内链接。
+  tests/：站点暂存与链接检查测试。
+  .github/workflows/：自动部署配置。
+
+全部计算在学生自己的浏览器中进行，不需要后端，也不会上传学生输入数据。
 """
 
 PREVIEW_BAT = """@echo off
@@ -294,6 +322,33 @@ def main():
                 z.write(os.path.join(base, fname), PKG + "/" + folder + "/" + fname)
     log("  打包 " + os.path.basename(zip_path) + "  (%.1f KB)"
         % (os.path.getsize(zip_path) / 1024.0))
+
+    source_zip_path = os.path.join(HERE, SOURCE_PKG + ".zip")
+    source_files = (
+        ".gitignore",
+        "README.md",
+        "build.py",
+        "build_v2.py",
+        "make.bat",
+        "package.py",
+        "serve.bat",
+        "stage_pages.py",
+        os.path.join("tests", "test_stage_pages.py"),
+        os.path.join(".github", "workflows", "deploy-pages.yml"),
+    )
+    with zipfile.ZipFile(source_zip_path, "w", zipfile.ZIP_DEFLATED) as z:
+        z.writestr(SOURCE_PKG + "/请先看-部署说明.txt", SOURCE_README)
+        for name in source_files:
+            z.write(os.path.join(HERE, name), SOURCE_PKG + "/源码/" + name)
+        z.write(os.path.join(BUILD, "index.html"),
+                SOURCE_PKG + "/可直接上传的网站/index.html")
+        for d, folder in (("A", A_DIR), ("B", B_DIR)):
+            base = os.path.join(BUILD, d)
+            for fname in sorted(os.listdir(base)):
+                z.write(os.path.join(base, fname),
+                        SOURCE_PKG + "/可直接上传的网站/" + folder + "/" + fname)
+    log("  打包 " + os.path.basename(source_zip_path) + "  (%.1f KB)"
+        % (os.path.getsize(source_zip_path) / 1024.0))
     log("完成。")
 
 
