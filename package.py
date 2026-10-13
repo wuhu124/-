@@ -244,17 +244,15 @@ MASTER = r"""<!DOCTYPE html>
 <body>
 <div class="wrap">
   <div class="top">
-    <span class="pill">网页版 · 零依赖</span>
+    <span class="pill">网页版</span>
     <h1>化学实验数据处理系统</h1>
-    <p>5 个实验的数据处理工具，每页都可以单独打开、单独嵌入课程平台。
-       所有计算都在浏览器本地完成，不联网、不上传数据。</p>
-    <div class="tip">👆 直接点下面的任意一项即可打开（无需安装任何软件、无需启动服务器）</div>
+    <div class="tip">👆 直接点下面的任意一项即可打开</div>
   </div>
 
   <div class="cols">
     <section class="card">
       <h2>版本 A · 清透玻璃版</h2>
-      <p class="sub">浅色磨砂玻璃风格，在课程平台的白底页面里最融合</p>
+      <p class="sub">浅色磨砂玻璃风格</p>
       @@A@@
     </section>
     <section class="card">
@@ -263,12 +261,6 @@ MASTER = r"""<!DOCTYPE html>
       @@B@@
     </section>
   </div>
-
-  <p class="foot">
-    · 两版计算逻辑完全相同，同一组数据结果一字不差，向学生发布时建议只用其中一版。<br>
-    · 要嵌入课程平台时：先看 <code>部署说明.txt</code>，iframe 代码在 <code>嵌入代码.txt</code> 里直接复制。<br>
-    · 想在本机用 http:// 方式预览（更接近线上环境）：双击 <code>本地预览.bat</code>。
-  </p>
 </div>
 @@WARN@@
 </body>
@@ -283,9 +275,6 @@ def master_index():
             out.append('<a class="row" href="%s/%s.html">'
                        '<span class="t">%s</span><span class="n">%s</span></a>'
                        % (folder, e["file"], e["tag"], e["name"]))
-        out.append('<a class="row all" href="%s/all-in-one.html">'
-                   '<span class="t">合并版</span>'
-                   '<span class="n">5 个实验合一 · 一个页面切换</span></a>' % folder)
         return "\n      ".join(out)
 
     return (MASTER

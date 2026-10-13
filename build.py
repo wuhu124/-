@@ -641,10 +641,10 @@ EXPS.append({
     "desc": "配制 4 份不同浓度的乙酸溶液，测 pH 后求电离常数 Ka",
     "fields": [
         {"key": "c0",  "label": "乙酸标准浓度 c₀", "unit": "mol/L", "def": 0.1},
-        {"key": "ph1", "label": "第 1 杯 pH", "unit": "", "def": 3.50},
-        {"key": "ph2", "label": "第 2 杯 pH", "unit": "", "def": 3.20},
-        {"key": "ph3", "label": "第 3 杯 pH", "unit": "", "def": 2.90},
-        {"key": "ph4", "label": "第 4 杯 pH", "unit": "", "def": 2.70},
+        {"key": "ph1", "label": "1 号溶液 pH", "unit": "", "def": 3.50},
+        {"key": "ph2", "label": "2 号溶液 pH", "unit": "", "def": 3.20},
+        {"key": "ph3", "label": "3 号溶液 pH", "unit": "", "def": 2.90},
+        {"key": "ph4", "label": "4 号溶液 pH", "unit": "", "def": 2.70},
     ],
     "compute": r"""
 function (v) {
@@ -654,7 +654,7 @@ function (v) {
   var plain = ["表 3-2  pH 法测乙酸电离常数", "c0 = " + v.c0 + " mol/L"];
   for (var i=0;i<4;i++){
     var ph = v["ph" + (i+1)];
-    if (!isFinite(ph)) return { err:"第 " + (i+1) + " 杯 pH 无效" };
+    if (!isFinite(ph)) return { err:(i+1) + " 号溶液 pH 无效" };
     var c  = v.c0 * VOL[i][0] / (VOL[i][0] + VOL[i][1]);
     var h  = Math.pow(10, -ph);
     var al = h / c * 100;
@@ -663,9 +663,9 @@ function (v) {
     kas.push(ka);
     lastF = f;
     if (al > maxAl) maxAl = al;
-    rows.push({ k:"第" + (i+1) + "杯  c=" + c.toFixed(5) + " α=" + al.toFixed(2) + "%  " + f,
+    rows.push({ k:(i+1) + " 号溶液  c=" + c.toFixed(5) + " α=" + al.toFixed(2) + "%  " + f,
                 v: fmtE(ka) });
-    plain.push("第" + (i+1) + "杯  c = " + c.toFixed(5) + " mol/L  α = " + al.toFixed(2)
+    plain.push((i+1) + " 号溶液  c = " + c.toFixed(5) + " mol/L  α = " + al.toFixed(2)
                + "%  Ka = " + fmtE(ka) + "  (" + f + ")");
   }
   var avg = 0;
@@ -684,7 +684,7 @@ function (v) {
       { label:"Ka 平均值",    value: fmtE(avg),        unit:"mol/L", hi:1 },
       { label:"相对误差",     value: err.toFixed(2),   unit:"%" },
       { label:"最大电离度 α", value: maxAl.toFixed(2), unit:"%" },
-      { label:"样品数",       value: "4",              unit:"杯" }
+      { label:"样品数",       value: "4",              unit:"份" }
     ],
     badge: { cls:"okay", text:"最大 α = " + maxAl.toFixed(2) + "% → 采用 " + lastF },
     chart: { kind:"bars", unit:"×10⁻⁵", bars:[
@@ -703,14 +703,14 @@ EXPS.append({
     "name": "电导法测 BaSO₄ 溶度积",
     "desc": "由 BaSO₄ 饱和溶液的电导率求溶解度与溶度积 Ksp",
     "fields": [
-        {"key": "cw", "label": "去离子水电导率 χ(H₂O)",  "unit": "S/cm", "def": 1.5e-6},
-        {"key": "cs", "label": "饱和溶液电导率 χ(溶液)", "unit": "S/cm", "def": 4.0e-6},
+        {"key": "cw", "label": "去离子水电导率 χ(H₂O)",  "unit": "μS/cm", "def": 1.5},
+        {"key": "cs", "label": "饱和溶液电导率 χ(溶液)", "unit": "μS/cm", "def": 4.0},
         {"key": "t",  "label": "实验温度 T",             "unit": "K",    "def": 298.15},
     ],
     "compute": r"""
 function (v) {
   if (!(v.t > 0)) return { err:"实验温度 T 必须大于 0" };
-  var d = v.cs*100 - v.cw*100;
+  var d = (v.cs - v.cw) * 1e-4;
   if (!(d > 0)) return { err:"χ(溶液) 必须大于 χ(H₂O)，否则 BaSO₄ 的贡献为负，请检查测量值" };
   var lam0 = interp(v.t, BASO4_LAMBDA0);
   var c    = d / lam0 / 1000;
@@ -740,8 +740,8 @@ function (v) {
     ]},
     plain: [
       "表 3-3  电导法测定 BaSO4 溶度积",
-      "去离子水电导率 = " + v.cw + " S/cm",
-      "饱和溶液电导率 = " + v.cs + " S/cm",
+      "去离子水电导率 = " + v.cw + " μS/cm",
+      "饱和溶液电导率 = " + v.cs + " μS/cm",
       "实验温度 T = " + v.t + " K",
       "----------------------------------",
       "λ0(BaSO4) = " + fmtE(lam0, 4) + " S·m²/mol",
@@ -820,7 +820,7 @@ function (v) {
   var Ea  = -slope * 2.303 * REF.R / 1000;
   var err = Math.abs(Ea - REF.Ea) / REF.Ea * 100;
   rows.push({ k:"活化能 Ea",            v: Ea.toFixed(2) + " kJ/mol", cls:"hi" });
-  rows.push({ k:"相对误差 (文献 51.8)", v: err.toFixed(2) + " %" });
+  rows.push({ k:"相对误差 (文献值 51.8 kJ/mol)", v: err.toFixed(2) + " %" });
   plain.push("斜率 = " + fmtE(slope, 3));
   plain.push("活化能 Ea = " + Ea.toFixed(2) + " kJ/mol");
   plain.push("相对误差 = " + err.toFixed(2) + " %");
@@ -849,19 +849,19 @@ EXPS.append({
     "file": "exp5-complex-k",
     "tag": "表 3-5",
     "name": "配合物组成与稳定常数",
-    "desc": "等摩尔系列法测磺基水杨酸合铁(Ⅲ) 的配体比与稳定常数 K稳",
+    "desc": "等摩尔系列法测磺基水杨酸合铁(Ⅲ) 的组成与稳定常数 K稳",
     "fields": [
-        {"key": "a1",  "label": "第 1 杯 吸光度 A",  "unit": "", "def": 0.10},
-        {"key": "a2",  "label": "第 2 杯 吸光度 A",  "unit": "", "def": 0.19},
-        {"key": "a3",  "label": "第 3 杯 吸光度 A",  "unit": "", "def": 0.28},
-        {"key": "a4",  "label": "第 4 杯 吸光度 A",  "unit": "", "def": 0.37},
-        {"key": "a5",  "label": "第 5 杯 吸光度 A",  "unit": "", "def": 0.46},
-        {"key": "a6",  "label": "第 6 杯 吸光度 A",  "unit": "", "def": 0.55},
-        {"key": "a7",  "label": "第 7 杯 吸光度 A",  "unit": "", "def": 0.50},
-        {"key": "a8",  "label": "第 8 杯 吸光度 A",  "unit": "", "def": 0.42},
-        {"key": "a9",  "label": "第 9 杯 吸光度 A",  "unit": "", "def": 0.33},
-        {"key": "a10", "label": "第 10 杯 吸光度 A", "unit": "", "def": 0.22},
-        {"key": "a11", "label": "第 11 杯 吸光度 A", "unit": "", "def": 0.11},
+        {"key": "a1",  "label": "1 号溶液 吸光度 A",  "unit": "", "def": 0.10},
+        {"key": "a2",  "label": "2 号溶液 吸光度 A",  "unit": "", "def": 0.19},
+        {"key": "a3",  "label": "3 号溶液 吸光度 A",  "unit": "", "def": 0.28},
+        {"key": "a4",  "label": "4 号溶液 吸光度 A",  "unit": "", "def": 0.37},
+        {"key": "a5",  "label": "5 号溶液 吸光度 A",  "unit": "", "def": 0.46},
+        {"key": "a6",  "label": "6 号溶液 吸光度 A",  "unit": "", "def": 0.55},
+        {"key": "a7",  "label": "7 号溶液 吸光度 A",  "unit": "", "def": 0.50},
+        {"key": "a8",  "label": "8 号溶液 吸光度 A",  "unit": "", "def": 0.42},
+        {"key": "a9",  "label": "9 号溶液 吸光度 A",  "unit": "", "def": 0.33},
+        {"key": "a10", "label": "10 号溶液 吸光度 A", "unit": "", "def": 0.22},
+        {"key": "a11", "label": "11 号溶液 吸光度 A", "unit": "", "def": 0.11},
     ],
     "compute": r"""
 function (v) {
@@ -869,7 +869,7 @@ function (v) {
   var A = [], TL = [];
   for (var i=0;i<11;i++){
     var a = v["a" + (i+1)];
-    if (!isFinite(a)) return { err:"第 " + (i+1) + " 杯吸光度无效" };
+    if (!isFinite(a)) return { err:(i+1) + " 号溶液吸光度无效" };
     A.push(a);
     TL.push(VOLS[i][1] / (VOLS[i][0] + VOLS[i][1]));
   }
@@ -902,16 +902,16 @@ function (v) {
   return {
     notes: [],
     kpis: [
-      { label:"配体比 n",     value: "1 : " + nb.toFixed(2), unit:"", hi:1 },
+      { label:"组成 n",       value: "1 : " + nb.toFixed(2), unit:"", hi:1 },
       { label:"解离度 α",     value: alpha.toFixed(4),       unit:"" },
       { label:"总浓度 c",     value: fmtE(c, 4),             unit:"mol/L" },
       { label:"稳定常数 K稳", value: fmtE(K, 3),             unit:"", hi:1 }
     ],
-    badge: { cls:"good", text:"极大点落在第 " + (idx+1) + " 杯 · TL = " + tlStar.toFixed(3) },
+    badge: { cls:"good", text:"极大点落在 " + (idx+1) + " 号溶液 · TL = " + tlStar.toFixed(3) },
     rows: [
       { k:"理论极大 A₁",        v: A1.toFixed(4) + "  @ TL=" + tlStar.toFixed(3) },
       { k:"实验极大 A₂",        v: A2.toFixed(4) },
-      { k:"配体比 n (Fe:H₃R)",  v: "1 : " + nb.toFixed(2) },
+      { k:"组成 n (Fe:H₃R)",    v: "1 : " + nb.toFixed(2) },
       { k:"解离度 α",           v: alpha.toFixed(4) },
       { k:"总浓度 c",           v: fmtE(c, 4) + " mol/L" },
       { k:"稳定常数 K稳",       v: fmtE(K, 3), cls:"hi" }
@@ -930,7 +930,7 @@ function (v) {
       "----------------------------------",
       "理论极大 A1 = " + A1.toFixed(4) + "  @ TL = " + tlStar.toFixed(3),
       "实验极大 A2 = " + A2.toFixed(4),
-      "配体比 n = 1 : " + nb.toFixed(2),
+      "组成 n = 1 : " + nb.toFixed(2),
       "解离度 α = " + alpha.toFixed(4),
       "总浓度 c = " + fmtE(c, 4) + " mol/L",
       "稳定常数 K稳 = " + fmtE(K, 3)
@@ -966,7 +966,7 @@ THEORY = {
             ("α ≥ 5 % 时（式 3-6）", "K<sub>a</sub> = c(H<sup>+</sup>)<sup>2</sup> / [ c − c(H<sup>+</sup>) ]"),
         ],
         "note": "α 很小时可忽略已电离部分，用式 3-8；α 较大时必须用式 3-6 扣除 c(H⁺)。"
-                "4 杯溶液的浓度由 c = c₀·V(HAc) / [V(HAc) + V(H₂O)] 算出。",
+                "4 份溶液的浓度由 c = c₀·V(HAc) / [V(HAc) + V(H₂O)] 算出。",
     },
     "exp3-baso4-ksp": {
         "items": [
@@ -975,7 +975,7 @@ THEORY = {
             ("由电导率求浓度", "c = χ(BaSO<sub>4</sub>) / ( λ<sub>0</sub> × 1000 )"),
             ("溶度积", "K<sub>sp</sub> = c(Ba<sup>2+</sup>)·c(SO<sub>4</sub><sup>2−</sup>) = c<sup>2</sup>"),
         ],
-        "note": "χ 的单位 S/cm 需先换算为 S/m 再代入；λ₀ 取该温度下的极限摩尔电导率，"
+        "note": "χ 以 μS/cm 输入，程序内部换算为 S/m 后代入；λ₀ 取该温度下的极限摩尔电导率，"
                 "只有当 BaSO₄ 完全电离且溶液无限稀时才可用。",
     },
     "exp4-kinetics-ea": {
@@ -993,7 +993,7 @@ THEORY = {
     "exp5-complex-k": {
         "items": [
             ("配体摩尔分数", "TL = n(H<sub>3</sub>R) / [ n(Fe<sup>3+</sup>) + n(H<sub>3</sub>R) ]"),
-            ("配体比", "n = TL* / ( 1 − TL* )"),
+            ("组成", "n = TL* / ( 1 − TL* )"),
             ("解离度", "α = ( A<sub>1</sub> − A<sub>2</sub> ) / A<sub>1</sub>"),
             ("稳定常数", "K<sub>稳</sub> = ( 1 − α ) / ( c · α<sup>2</sup> )"),
         ],
